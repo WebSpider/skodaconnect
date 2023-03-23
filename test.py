@@ -3,6 +3,8 @@ import asyncio
 import aiohttp
 from skodaconnect.api.mbb.client import MBBClient
 from skodaconnect.api.technical.client import TechnicalClient
+
+
 async def main():
     """Async main"""
     vin = ""
@@ -25,26 +27,47 @@ async def main():
     print()
     print(await conn_client.home_region(vin))
     print()
-    print(await conn_client.status(vin = vin, base = "https://fal-3a.prd.eu.dp.vwg-connect.com"))
+    print(
+        await conn_client.status(
+            vin=vin, base="https://fal-3a.prd.eu.dp.vwg-connect.com"
+        )
+    )
     print()
-    print(await conn_client.timers(vin = vin, base = "https://fal-3a.prd.eu.dp.vwg-connect.com"))
+    print(
+        await conn_client.timers(
+            vin=vin, base="https://fal-3a.prd.eu.dp.vwg-connect.com"
+        )
+    )
     print()
-    print(await conn_client.aircon_status(vin = vin, base = "https://fal-3a.prd.eu.dp.vwg-connect.com"))
+    print(
+        await conn_client.aircon_status(
+            vin=vin, base="https://fal-3a.prd.eu.dp.vwg-connect.com"
+        )
+    )
     print()
-    print(await conn_client.charging_status(vin = vin, base = "https://fal-3a.prd.eu.dp.vwg-connect.com"))
+    print(
+        await conn_client.charging_status(
+            vin=vin, base="https://fal-3a.prd.eu.dp.vwg-connect.com"
+        )
+    )
     print()
-    print(await conn_client.aux_heater(vin = vin, base = "https://fal-3a.prd.eu.dp.vwg-connect.com"))
+    print(
+        await conn_client.aux_heater(
+            vin=vin, base="https://fal-3a.prd.eu.dp.vwg-connect.com"
+        )
+    )
     print()
-    print(await conn_client.trip_stats(
-        vin = vin,
-        base = "https://fal-3a.prd.eu.dp.vwg-connect.com",
-        period = "cyclic"
-    ))
+    print(
+        await conn_client.trip_stats(
+            vin=vin, base="https://fal-3a.prd.eu.dp.vwg-connect.com", period="cyclic"
+        )
+    )
     print()
-    print(await conn_client.position(
-        vin = vin,
-        base = "https://fal-3a.prd.eu.dp.vwg-connect.com"
-    ))
+    print(
+        await conn_client.position(
+            vin=vin, base="https://fal-3a.prd.eu.dp.vwg-connect.com"
+        )
+    )
     print()
     tech = TechnicalClient(mysess)
     await tech.auth(email, password)
@@ -53,6 +76,7 @@ async def main():
 
     if mysess is not None:
         await mysess.close()
+
 
 asyncio.run(main())
 exit()

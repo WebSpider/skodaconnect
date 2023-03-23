@@ -9,20 +9,46 @@ from __future__ import annotations
 from aiohttp import ClientSession
 from skodaconnect.api.base.client import APIClient
 from skodaconnect.api.connect.const import (
-    APP_URI, CLIENT, GRANTS, SCOPES, SYSTEM_ID, XAPPNAME,
-    CUST_URL, MBB_STATUS, PERSONAL_DATA, CAR_DATA,
+    APP_URI,
+    CLIENT,
+    GRANTS,
+    SCOPES,
+    SYSTEM_ID,
+    XAPPNAME,
+    CUST_URL,
+    MBB_STATUS,
+    PERSONAL_DATA,
+    CAR_DATA,
 )
 from skodaconnect.helpers.token import decode_token
 from skodaconnect.helpers.html import get_nonce, get_state
 from skodaconnect.strings.globals import (
-    CONTENT, APP_JSON, PARAMS, DATA, STATUS,
+    CONTENT,
+    APP_JSON,
+    PARAMS,
+    DATA,
+    STATUS,
     HTTP_OK,
-    NONCE, STATE, REDIR_URI, RES_TYPE, CLIENT_ID, SCOPE, SUBJECT,
-    REFRESH, REVOKE,
-    ID_TOKEN, ACCESS_TOKEN, REFRESH_TOKEN, TOKENTYPE,
-    HTTP_ERROR, HTTP_ERRORS, HTTP_GET,
+    NONCE,
+    STATE,
+    REDIR_URI,
+    RES_TYPE,
+    CLIENT_ID,
+    SCOPE,
+    SUBJECT,
+    REFRESH,
+    REVOKE,
+    ID_TOKEN,
+    ACCESS_TOKEN,
+    REFRESH_TOKEN,
+    TOKENTYPE,
+    HTTP_ERROR,
+    HTTP_ERRORS,
+    HTTP_GET,
     ERROR,
-    XREQ_WITH, AUTHZ, BEARER
+    XREQ_WITH,
+    AUTHZ,
+    BEARER,
 )
 
 
@@ -35,9 +61,7 @@ class ConnectClient(APIClient):
     """
 
     def __init__(
-            self: APIClient,
-            http_session: ClientSession,
-            api_debug: bool = False
+        self: APIClient, http_session: ClientSession, api_debug: bool = False
     ) -> None:
         """Initialize API Client 'Connect'."""
         super().__init__(http_session, api_debug)
@@ -56,7 +80,7 @@ class ConnectClient(APIClient):
                 STATE: get_state(),
                 RES_TYPE: self.response_type,
                 CLIENT_ID: self.client_id,
-                SCOPE: self.scope
+                SCOPE: self.scope,
             }
         }
         # Set headers to send with authz request
@@ -65,11 +89,11 @@ class ConnectClient(APIClient):
         }
 
     async def _api_call(  # pylint: disable=arguments-differ
-            self: APIClient,
-            url: str,
-            method: str = HTTP_GET,
-            headers: str = None,
-            payload: any = None
+        self: APIClient,
+        url: str,
+        method: str = HTTP_GET,
+        headers: str = None,
+        payload: any = None,
     ) -> any:
         """Execute API call with common settings."""
         # Set token type for request
@@ -79,7 +103,7 @@ class ConnectClient(APIClient):
         req_headers = {
             CONTENT: APP_JSON,
             AUTHZ: " ".join(authz_parts),
-            TOKENTYPE: sysid
+            TOKENTYPE: sysid,
         }
         # Update with headers specified in parameters
         if headers is not None:
@@ -93,10 +117,7 @@ class ConnectClient(APIClient):
             )
         else:
             return await self._request(
-                url=url,
-                method=method,
-                headers=req_headers,
-                **payload
+                url=url, method=method, headers=req_headers, **payload
             )
 
     async def _exchange_code(self: APIClient, code: str) -> dict:
@@ -114,7 +135,9 @@ class ConnectClient(APIClient):
             # Return empty dict if unable to parse received tokens
             return {ERROR: "No tokens"}
 
-    async def _revoke_token(self: APIClient) -> bool:  # pylint: disable=arguments-differ
+    async def _revoke_token(
+        self: APIClient,
+    ) -> bool:  # pylint: disable=arguments-differ
         """Revoke JWT (refresh) token."""
         try:
             return await self.skoda_token(
@@ -124,7 +147,9 @@ class ConnectClient(APIClient):
         except:  # pylint: disable=broad-except, bare-except
             return False
 
-    async def refresh_tokens(self: APIClient) -> bool:  # pylint: disable=arguments-differ
+    async def refresh_tokens(
+        self: APIClient,
+    ) -> bool:  # pylint: disable=arguments-differ
         """Refresh JWT tokens."""
         try:
             tokens = await self.skoda_token(
