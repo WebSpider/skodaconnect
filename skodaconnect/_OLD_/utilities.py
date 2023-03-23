@@ -1,6 +1,4 @@
-from datetime import date, datetime
-from base64 import b64encode
-from string import ascii_letters as letters, digits
+from datetime import datetime
 from sys import argv
 from os import environ as env
 from os.path import join, dirname, expanduser

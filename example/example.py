@@ -6,6 +6,7 @@ import aiohttp
 from skodaconnect.api.mbb.client import MBBClient
 from skodaconnect.api.technical.client import TechnicalClient
 
+
 async def main():
     """Async main"""
     vin = ""
@@ -45,26 +46,47 @@ async def main():
     print(await mbb_client.home_region(vin))
     print()
     # Used static base URL, the high level code should handle what to send
-    print(await mbb_client.status(vin = vin, base = "https://fal-3a.prd.eu.dp.vwg-connect.com"))
+    print(
+        await mbb_client.status(
+            vin=vin, base="https://fal-3a.prd.eu.dp.vwg-connect.com"
+        )
+    )
     print()
-    print(await mbb_client.timers(vin = vin, base = "https://fal-3a.prd.eu.dp.vwg-connect.com"))
+    print(
+        await mbb_client.timers(
+            vin=vin, base="https://fal-3a.prd.eu.dp.vwg-connect.com"
+        )
+    )
     print()
-    print(await mbb_client.aircon_status(vin = vin, base = "https://fal-3a.prd.eu.dp.vwg-connect.com"))
+    print(
+        await mbb_client.aircon_status(
+            vin=vin, base="https://fal-3a.prd.eu.dp.vwg-connect.com"
+        )
+    )
     print()
-    print(await mbb_client.charging_status(vin = vin, base = "https://fal-3a.prd.eu.dp.vwg-connect.com"))
+    print(
+        await mbb_client.charging_status(
+            vin=vin, base="https://fal-3a.prd.eu.dp.vwg-connect.com"
+        )
+    )
     print()
-    print(await mbb_client.aux_heater(vin = vin, base = "https://fal-3a.prd.eu.dp.vwg-connect.com"))
+    print(
+        await mbb_client.aux_heater(
+            vin=vin, base="https://fal-3a.prd.eu.dp.vwg-connect.com"
+        )
+    )
     print()
-    print(await mbb_client.trip_stats(
-        vin = vin,
-        base = "https://fal-3a.prd.eu.dp.vwg-connect.com",
-        period = "cyclic"
-    ))
+    print(
+        await mbb_client.trip_stats(
+            vin=vin, base="https://fal-3a.prd.eu.dp.vwg-connect.com", period="cyclic"
+        )
+    )
     print()
-    print(await mbb_client.position(
-        vin = vin,
-        base = "https://fal-3a.prd.eu.dp.vwg-connect.com"
-    ))
+    print(
+        await mbb_client.position(
+            vin=vin, base="https://fal-3a.prd.eu.dp.vwg-connect.com"
+        )
+    )
     print()
 
     # Create a new API client for the "Technical" API
@@ -83,6 +105,7 @@ async def main():
 
     if mysess is not None:
         await mysess.close()
+
 
 asyncio.run(main())
 exit()

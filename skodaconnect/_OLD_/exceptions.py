@@ -6,6 +6,7 @@ class SkodaConfigException(Exception):
         super(SkodaConfigException, self).__init__(status)
         self.status = status
 
+
 class SkodaAuthenticationException(Exception):
     """Raised when credentials are invalid during authentication"""
 
@@ -13,6 +14,7 @@ class SkodaAuthenticationException(Exception):
         """Initialize exception"""
         super(SkodaAuthenticationException, self).__init__(status)
         self.status = status
+
 
 class SkodaAccountLockedException(Exception):
     """Raised when account is locked from too many login attempts"""
@@ -22,6 +24,7 @@ class SkodaAccountLockedException(Exception):
         super(SkodaAccountLockedException, self).__init__(status)
         self.status = status
 
+
 class SkodaTokenExpiredException(Exception):
     """Raised when server reports that the access token has expired"""
 
@@ -29,6 +32,7 @@ class SkodaTokenExpiredException(Exception):
         """Initialize exception"""
         super(SkodaTokenExpiredException, self).__init__(status)
         self.status = status
+
 
 class SkodaTokenInvalidException(Exception):
     """Raised when server reports that a token is invalid"""
@@ -38,6 +42,7 @@ class SkodaTokenInvalidException(Exception):
         super(SkodaTokenInvalidException, self).__init__(status)
         self.status = status
 
+
 class SkodaException(Exception):
     """Raised when an unknown error occurs during API interaction"""
 
@@ -45,6 +50,7 @@ class SkodaException(Exception):
         """Initialize exception"""
         super(SkodaException, self).__init__(status)
         self.status = status
+
 
 class SkodaThrottledException(Exception):
     """Raised when the API throttles the connection"""
@@ -54,6 +60,7 @@ class SkodaThrottledException(Exception):
         super(SkodaThrottledException, self).__init__(status)
         self.status = status
 
+
 class SkodaEULAException(Exception):
     """Raised when EULA must be accepted before login"""
 
@@ -61,6 +68,7 @@ class SkodaEULAException(Exception):
         """Initialize exception"""
         super(SkodaEULAException, self).__init__(status)
         self.status = status
+
 
 class SkodaLoginFailedException(Exception):
     """Raised when login fails for an unknown reason"""
@@ -70,6 +78,7 @@ class SkodaLoginFailedException(Exception):
         super(SkodaLoginFailedException, self).__init__(status)
         self.status = status
 
+
 class SkodaInvalidRequestException(Exception):
     """Raised when an unsupported request is made"""
 
@@ -78,6 +87,7 @@ class SkodaInvalidRequestException(Exception):
         super(SkodaInvalidRequestException, self).__init__(status)
         self.status = status
 
+
 class SkodaRequestInProgressException(Exception):
     """Raised when a request fails because another request is already in progress"""
 
@@ -85,6 +95,7 @@ class SkodaRequestInProgressException(Exception):
         """Initialize exception"""
         super(SkodaRequestInProgressException, self).__init__(status)
         self.status = status
+
 
 class SkodaServiceUnavailable(Exception):
     """Raised when a API is unavailable"""
