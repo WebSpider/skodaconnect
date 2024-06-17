@@ -3505,3 +3505,139 @@ class Vehicle:
             indent=4,
             default=serialize
         )
+
+
+class BaseVehicle:
+    """
+    ABC for a vehicle
+    """
+    def __init__(self, source, data):
+        self._connection = source
+        self._discovered = False
+
+
+class MySMobVehicle(BaseVehicle):
+    battery_capacity_kwh: int
+    engine_power_kw: int
+    engine_type: str
+    model: str
+    model_year: str
+    title: str
+    vin: str
+    software_version: str
+
+    def __init__(self, source, data):
+        super().__init__(source, data)
+        self.deactivated = False
+        self._homeregion = None
+        self.vin = data.get("vin")
+        self.software_version = data.get("softwareVersion")
+
+        spec = data.get("specification")
+        self.battery_capacity_kwh = spec.get("battery", {}).get("capacityInKWh")
+        self.engine_power_kw = spec.get("engine", {}).get("powerInKW")
+        self.engine_type = spec.get("engine", {}).get("type")
+        self.model = spec.get("model")
+        self.model_year = spec.get("modelYear")
+        self.title = spec.get("title")
+
+    async def update(self):
+        """Try to fetch data for all known API endpoints."""
+        # Update vehicle information if not discovered or stale information
+        if not self._discovered:
+            await self.discover()
+        else:
+            # Rediscover if data is older than 1 day
+            dayago = datetime.now() - timedelta(days=1)
+            if self._discovered < dayago:
+                await self.discover()
+
+        # Fetch all data if car is not deactivated
+        if not self.deactivated:
+            try:
+                await asyncio.gather(
+                    self.get_preheater(),
+                    self.get_climater(),
+                    self.get_trip_statistic(),
+                    self.get_position(),
+                    self.get_statusreport(),
+                    self.get_charger(),
+                    self.get_timerprogramming(),
+                    return_exceptions=True
+                )
+            except:
+                raise SkodaException("Update failed")
+            return True
+        else:
+            _LOGGER.info(f'Vehicle with VIN {self.vin} is deactivated.')
+            return False
+        return True
+
+    async def discover(self):
+        """Discover vehicle and initial data."""
+        # For VW-Group API
+        if 'ONLINE' in self._connectivities:
+            _LOGGER.debug(f'Starting discovery for vehicle {self.vin}')
+            homeregion = await self._connection.getHomeRegion(self.vin)
+            _LOGGER.debug(f'Get homeregion for VIN {self.vin}')
+            if homeregion:
+                self._homeregion = homeregion
+
+            await asyncio.gather(
+                self.get_realcardata(),
+                return_exceptions=True
+            )
+            _LOGGER.debug('Attempting discovery of supported API endpoints for vehicle.')
+            operationList = await self._connection.getOperationList(self.vin)
+            if operationList:
+                serviceInfo = operationList['serviceInfo']
+                # Iterate over all endpoints in ServiceInfo list
+                for service in serviceInfo:
+                    try:
+                        if service.get('serviceId', 'Invalid') in self._services.keys():
+                            data = {}
+                            serviceName = service.get('serviceId', None)
+                            if service.get('serviceStatus', {}).get('status', 'Disabled') == 'Enabled':
+                                data['active'] = True
+                                if service.get('cumulatedLicense', {}).get('expirationDate', False):
+                                    data['expiration'] = service.get('cumulatedLicense', {}).get('expirationDate', None).get('content', None)
+                                if service.get('operation', False):
+                                    data.update({'operations': []})
+                                    for operation in service.get('operation', []):
+                                        data['operations'].append(operation.get('id', None))
+                                _LOGGER.debug(f'Discovered active supported service: {serviceName}, licensed until {data.get("expiration").strftime("%Y-%m-%d %H:%M:%S")}')
+                            elif service.get('serviceStatus', {}).get('status', None) == 'Disabled':
+                                reason = service.get('serviceStatus', {}).get('reason', 'Unknown')
+                                _LOGGER.debug(f'Service: {serviceName} is disabled because of reason: {reason}')
+                                data['active'] = False
+                            else:
+                                _LOGGER.warning(f'Could not determine status of service: {serviceName}, assuming enabled')
+                                data['active'] = True
+                            self._services[serviceName].update(data)
+                    except Exception as error:
+                        _LOGGER.warning(f'Encountered exception: "{error}" while parsing service item: {service}')
+                        pass
+            else:
+                _LOGGER.warning(f'Could not determine available API endpoints for {self.vin}')
+            if self._connection._session_fulldebug:
+                for endpointName, endpoint in self._services.items():
+                    if endpoint.get('active', False):
+                        _LOGGER.debug(f'API endpoint "{endpointName}" valid until {endpoint.get("expiration").strftime("%Y-%m-%d %H:%M:%S")} - operations: {endpoint.get("operations", [])}')
+
+        # For Skoda native API
+        elif 'REMOTE' in self._connectivities:
+            for service in self._services:
+                for capability in self._capabilities:
+                    if capability == service:
+                        self._services[service]['active'] = True
+        # For ONLY SmartLink capability
+        elif 'INCAR' in self._connectivities:
+            self._services = {'vehicle_status': {'active': True}}
+        else:
+            self._services = {}
+
+        # Get URLs for model image
+        self._modelimagel = await self.get_modelimageurl(size='L')
+        self._modelimages = await self.get_modelimageurl(size='S')
+
+        self._discovered = datetime.now()

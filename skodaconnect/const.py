@@ -175,3 +175,179 @@ PIN_HEATING = '/api/rolesrights/authorization/v2/vehicles/$vin/services/rheating
 PIN_TIMER = '/api/rolesrights/authorization/v2/vehicles/$vin/services/timerprogramming_v1/operations/P_SETTINGS_AU/security-pin-auth-requested'
 PIN_RCLIMA = '/api/rolesrights/authorization/v2/vehicles/$vin/services/rclima_v1/operations/P_START_CLIMA_AU/security-pin-auth-requested'
 PIN_COMPLETE = '/api/rolesrights/authorization/v2/security-pin-auth-completed'
+
+
+class BaseLoginMeta:
+    hmac: str
+    csrf: str
+    relay_state: str
+
+    def __init__(self, data):
+        self.csrf = data.get("csrf_token")
+        self.hmac = data.get("templateModel", {}).get("hmac")
+        self.relay_state = data.get("templateModel", {}).get("relayState")
+
+
+class BaseAuthenticationCodes:
+    code: str
+    token_type: str
+    id_token: str
+
+    def __init__(self, data):
+        self.code = data.get("code")
+        self.token_type = data.get("token_type")
+        self.id_token = data.get("id_token")
+
+
+class BaseCapability:
+    id: str
+
+    def __init__(self, data):
+        self.id = data.get("id")
+
+
+class BaseUser:
+    capabilities: list[BaseCapability]
+    country: str
+    date_of_birth: str
+    email: str
+    first_name: str
+    last_name: str
+    id: str
+    nickname: str
+    phone: str
+
+    def __init__(self, data):
+        self.capabilities = [BaseCapability(cap) for cap in data.get("capabilities")]
+        self.country = data.get("country")
+        self.date_of_birth = data.get("dateOfBirth")
+        self.email = data.get("email")
+        self.first_name = data.get("firstName")
+        self.last_name = data.get("lastName")
+        self.id = data.get("id")
+        self.nickname = data.get("nickname")
+        self.phone = data.get("phone")
+
+
+class BaseVehicle:
+    battery_capacity_kwh: int
+    engine_power_kw: int
+    engine_type: str
+    model: str
+    model_year: str
+    title: str
+    vin: str
+    software_version: str
+
+    def __init__(self, data):
+        vehicle = data.get("deliveredVehicle")
+        self.vin = vehicle.get("vin")
+        self.software_version = vehicle.get("softwareVersion")
+
+        spec = vehicle.get("specification")
+        self.battery_capacity_kwh = spec.get("battery", {}).get("capacityInKWh")
+        self.engine_power_kw = spec.get("engine", {}).get("powerInKW")
+        self.engine_type = spec.get("engine", {}).get("type")
+        self.model = spec.get("model")
+        self.model_year = spec.get("modelYear")
+        self.title = spec.get("title")
+
+
+class BaseCharging:
+    remaining_distance_m: int
+    battery_percent: int
+    charging_power_kw: float
+    charge_type: str
+    charging_rate_in_km_h: float
+    remaining_time_min: str
+    state: str
+    target_percent: str
+
+    def __init__(self, data):
+        self.target_percent = data.get("settings", {}).get("targetStateOfChargeInPercent")
+
+        stat = data.get("status")
+        self.remaining_distance_m = stat.get("battery", {}).get("remainingCruisingRangeInMeters")
+        self.battery_percent = stat.get("battery", {}).get("stateOfChargeInPercent")
+        self.charging_power_kw = stat.get("chargePowerInKw")
+        self.charge_type = stat.get("chargeType")
+        self.charging_rate_in_km_h = stat.get("chargingRateInKilometersPerHour")
+        self.remaining_time_min = stat.get("remainingTimeToFullyChargedInMinutes")
+        self.state = stat.get("state")
+
+
+class BaseVehicleStatus:
+    bonnet: str
+    doors: str
+    trunk: str
+    doors_locked: bool
+    lights_on: bool
+    locked: bool
+    windows: str
+
+    def __init__(self, data):
+        self.bonnet = data.get("detail", {}).get("bonnet")
+        self.doors = data.get("overall", {}).get("doors")
+        self.trunk = data.get("detail", {}).get("trunk")
+        self.doors_locked = data.get("overall", {}).get("doorsLocked")
+        self.lights_on = data.get("overall", {}).get("lights") == "ON"
+        self.locked = data.get("overall", {}).get("locked") == "YES"
+        self.windows = data.get("overall", {}).get("windows")
+
+
+class BaseAirConditioning:
+    window_heating_enabled: bool
+    window_heating_front_on: bool
+    window_heating_rear_on: bool
+    target_temperature_celsius: float
+    steering_wheel_position: str
+    air_conditioning_on: bool
+    charger_connection_state: str
+    charger_lock_state: str
+    time_to_reach_target_temperature: str
+
+    def __init__(self, data):
+        self.window_heating_enabled = data.get("windowHeatingEnabled")
+        self.window_heating_front_on = data.get("windowHeatingState", {}).get("front") == "ON"
+        self.window_heating_rear_on = data.get("windowHeatingState", {}).get("rear") == "ON"
+        self.target_temperature_celsius = data.get("targetTemperature", {}).get("temperatureValue")
+        self.steering_wheel_position = data.get("steeringWheelPosition")
+        self.air_conditioning_on = data.get("state") == "ON"
+        self.charger_connection_state = data.get("chargerConnectionState")
+        self.charger_lock_state = data.get("chargerLockState")
+        self.time_to_reach_target_temperature = data.get("estimatedDateTimeToReachTargetTemperature")
+
+
+class BasePosition:
+    city: str
+    country: str
+    country_code: str
+    house_number: str
+    street: str
+    zip_code: str
+    lat: float
+    lng: float
+
+    def __init__(self, data):
+        pos0 = data.get("positions")[0]
+        self.city = pos0.get("address", {}).get("city")
+        self.country = pos0.get("address", {}).get("country")
+        self.country_code = pos0.get("address", {}).get("countryCode")
+        self.house_number = pos0.get("address", {}).get("houseNumber")
+        self.street = pos0.get("address", {}).get("street")
+        self.zip_code = pos0.get("address", {}).get("zipCode")
+        self.lat = pos0.get("gpsCoordinates", {}).get("latitude")
+        self.lng = pos0.get("gpsCoordinates", {}).get("longitude")
+
+
+class BaseHealth:
+    mileage_km: int
+
+    def __init__(self, data):
+        self.mileage_km = data.get("mileageInKm")
+
+
+# MySkoda Mobile other constants
+MYSMOB_CLIENT_ID = "7f045eee-7003-4379-9968-9355ed2adb06@apps_vw-dilab_com"
+MYSMOB_BASE_URL = "https://mysmob.api.connect.skoda-auto.cz"
+MYSMOB_BASE_IDENT = "https://identity.vwgroup.io"
